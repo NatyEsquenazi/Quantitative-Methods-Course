@@ -1,3 +1,4 @@
+
 rm(list = ls()) # limpia el workspace de R-Project
 library(readxl)
 library(dplyr)
@@ -126,7 +127,7 @@ setwd("/Users/mouse/Dropbox/Seminario Stata/Datos") # este comando determina que
 
 ##### Levantamos datos desde excel
 # El comando read_excel permite la lectura de bases de datos desde excel. 
-DalosLevantados = read_excel("EPH-2019-04/usu_Individual_T419.xls") # levantamos los datos
+DalosLevantados = read_excel("usu_Individual_T419.xls") # levantamos los datos
 # desde un archivo de excel
 
 
@@ -179,9 +180,8 @@ DalosLevantados_subset$RamaActi =  as.numeric(DalosLevantados_subset$RamaActi)
 Ind_2019_04_subset = DalosLevantados_subset
 
 # Las expresiones que van desde la línea 183 hasta la 200 crean una variables 
-# artificial similar a la variables parenteso de la base EPH. Esta expresión se
-# llama función, es decir que estamos creando una función que puede ser utilizada
-# más adelante asignándole la insumo "x".
+# artificial similar a la variables parenteso de la base EPH. Esta expresión se llama función, es decir que estamos creando una función que puede ser utilizada más adelante asignándole la insumo "x".
+
 componente = function(x){
   valores = unique(x)
   n = length(x)
@@ -230,9 +230,13 @@ df2$y3 = rpois(n2,100)
 
 
 # Unimos dos bases que tienen dos variables de conexión
-dfall = merge(df1,df2, by = c("id","t"), all= TRUE)
+dfall = merge(df1, df2, by = c("id","t"), all= TRUE)
+
+# Crea una nueva variable que se llama Fuente 
 dfall$Fuente <- apply(dfall[c("DF.x", "DF.y")], 1, 
-                      function(x) paste(na.omit(x), collapse = ""))
+                      function(x) paste(na.omit(x), 
+                                    collapse = ""))
+
 dfall$DF.x = NULL; dfall$DF.y = NULL
 
 dfall
@@ -370,10 +374,14 @@ HistIngFamPer = hist(Ind_2019_04_subset$IngTotalFamPerc[Ind_2019_04_subset$IngTo
 
 
 # Resumen estadístico del ingreso total individual por sexo
-summaryStats(IngTotalInd ~ 1, data= na.omit(Ind_2019_04_subset),stats.in.rows = TRUE, 
+summaryStats(IngTotalInd ~ 1, 
+             data= na.omit(Ind_2019_04_subset),
+             stats.in.rows = TRUE, 
              ci=FALSE, digits = 1, combine.groups = FALSE)
 
-summaryStats(IngTotalInd ~ 1, data= na.omit(Ind_2019_04_subset[,"IngTotalInd"]),stats.in.rows = TRUE, 
+summaryStats(IngTotalInd ~ 1, 
+             data= na.omit(Ind_2019_04_subset[,"IngTotalInd"]),
+             stats.in.rows = TRUE, 
              ci=FALSE, digits = 1, combine.groups = FALSE)
 
 MediaIngInd = sum(Ind_2019_04_subset$IngTotalInd[Ind_2019_04_subset$IngTotalInd>=0], na.rm = TRUE)/
@@ -385,6 +393,7 @@ MediaIngInd = sum(Ind_2019_04_subset$IngTotalInd[Ind_2019_04_subset$IngTotalInd>
 datos = na.omit(Ind_2019_04_subset[Ind_2019_04_subset$IngTotalInd>0 
                                    & Ind_2019_04_subset$IngTotalInd<50000, 
                                    c("IngTotalInd","Sexo","SitLaboral")])
+
 ggplot(datos, aes(x = IngTotalInd)) +
   geom_histogram(fill = "Red", colour = "black") +
   facet_grid(SitLaboral ~ .) + xlab("Ingresos") + 
@@ -392,16 +401,20 @@ ggplot(datos, aes(x = IngTotalInd)) +
 
 
 # Resumen estadístico del ingreso total individual por estado laboral
-summaryStats(IngTotalInd ~ SitLaboral, data= datos,
-             stats.in.rows = TRUE, digits = 1, combine.groups = FALSE)
+summaryStats(IngTotalInd ~ SitLaboral, 
+             data= datos,
+             stats.in.rows = TRUE, 
+             digits = 1, combine.groups = FALSE)
 
-summaryStats(IngTotalInd ~ SitLaboral, data= na.omit(Ind_2019_04_subset[,c("IngTotalInd","SitLaboral")]),
+summaryStats(IngTotalInd ~ SitLaboral, 
+             data= na.omit(Ind_2019_04_subset[,c("IngTotalInd","SitLaboral")]),
              stats.in.rows = TRUE,
              digits = 1, combine.groups = FALSE)
 
 
 # Resumen estadístico del ingreso total individual por nivel educativo máximo si finalizó o no
-summaryStats(IngTotalInd ~ EducaMax, data= (subset(Ind_2019_04_subset[,c("IngTotalInd","EducaMax",
+summaryStats(IngTotalInd ~ EducaMax, 
+             data= (subset(Ind_2019_04_subset[,c("IngTotalInd","EducaMax",
                                                                          "EducaMaxFin" )], 
                                                    EducaMaxFin == "Si")),
              stats.in.rows = TRUE, digits = 1, combine.groups = FALSE)
@@ -421,34 +434,50 @@ summaryStats(EducaMax ~ Sexo, data= na.omit(Ind_2019_04_subset[,c("EducaMax","Se
 # Son los puntos en que se divide la distribución o rango de una variable
 # Ejemplo: cuartiles (4 divisiones), cediles (10 divisiones), percentiles (100 divisiones)
 
-cuartiles = quantile(na.omit(Ind_2019_04_subset$IngTotalFamPerc), probs = c(0.25, 0.50, 0.75))
+cuartiles = quantile(na.omit(Ind_2019_04_subset$IngTotalFamPerc), 
+                     probs = c(0.25, 0.50, 0.75))
 cuartiles
 
-deciles = quantile(na.omit(Ind_2019_04_subset$IngTotalFamPerc), probs = seq(0.1,0.9,by=0.1))
+deciles = quantile(na.omit(Ind_2019_04_subset$IngTotalFamPerc), 
+                   probs = seq(0.1, 0.9, by=0.1))
 deciles
 
-NorCuantiles = round(qnorm(c(0.9,0.95,0.975,0.99), mean = 0, sd = 1),3) # caso normal estándar 
+## Anotacion: En deciles creo un secuencia entre 1 y 9, y se incrementa en 1
+
+NorCuantiles = round(qnorm(c(0.9,0.95,0.975,0.99), 
+                           mean = 0, sd = 1),3) # caso normal estándar 
 NorCuantiles
+
+## Creamos un grafico de densidad 
 
 XdataTeor = rnorm(50000,0,1)
 density1 = density(XdataTeor)
 punto = qnorm(0.95,0,1)
-fig <- plot_ly(x = ~density1$x[density1$x>=punto], y = ~density1$y[density1$x>=punto], 
-               type = 'scatter', mode = 'lines', name = 'Fair cut', fill = 'tozeroy',
+
+fig <- plot_ly(x = ~density1$x[density1$x>=punto], 
+               y = ~density1$y[density1$x>=punto], 
+               type = 'scatter', 
+               mode = 'lines', name = 'Fair cut', 
+               fill = 'tozeroy',
                fillcolor = 'rgba(255, 0, 0, 0.5)',
                line = list(width = 0.5))
-fig <- fig %>% add_trace(x = ~density1$x[density1$x<punto], y = ~density1$y[density1$x<punto],
+fig <- fig %>% add_trace(x = ~density1$x[density1$x<punto], 
+                         y = ~density1$y[density1$x<punto],
                          name = 'Ideal cut', fill = 'tozeroy',
                          fillcolor = 'rgba(255, 212, 96, 0.5)')
 fig <- fig %>% layout(xaxis = list(title = 'Valores de la v.a.'),
-                      yaxis = list(title = 'Densidad'), showlegend = FALSE) 
-fig <- fig %>% add_segments(x = NorCuantiles[1], xend = NorCuantiles[1], y = 0, 
+                      yaxis = list(title = 'Densidad'), 
+                      showlegend = FALSE) 
+fig <- fig %>% add_segments(x = NorCuantiles[1], 
+                            xend = NorCuantiles[1], y = 0, 
                             yend = 0.4, width = 3, hoverinfo = "none", 
                             line=list(color="red"))
-fig <- fig %>% add_segments(x = NorCuantiles[2], xend = NorCuantiles[2], y = 0, 
+fig <- fig %>% add_segments(x = NorCuantiles[2], 
+                            xend = NorCuantiles[2], y = 0, 
                             yend = 0.4, width = 3, hoverinfo = "none", 
                             line=list(color="red"))
-fig <- fig %>% add_segments(x = NorCuantiles[3], xend = NorCuantiles[3], y = 0, 
+fig <- fig %>% add_segments(x = NorCuantiles[3], 
+                            xend = NorCuantiles[3], y = 0, 
                             yend = 0.4, width = 3, hoverinfo = "none", 
                             line=list(color="red"))
 fig
@@ -493,15 +522,21 @@ fig
 ############# Distribuición muestral ##############
 ############ La media muestral ############
 
+# Comportamiento de la media muestral v.a
 datos = na.omit(Ind_2019_04_subset[Ind_2019_04_subset$IngTotalInd>=0 &
-                                     Ind_2019_04_subset$IngTotalInd<50000, 
+                                   Ind_2019_04_subset$IngTotalInd<50000, 
                                    c("IngTotalInd","Sexo","SitLaboral")])
 
+n= 10
 muestra = datos[sample(dim(datos)[1],100,replace = TRUE),]
 summaryStats(IngTotalInd ~ 1, data= muestra,
-             stats.in.rows = TRUE, ci=TRUE, conf.level=0.95, p.value = FALSE,
-             digits = 1, combine.groups = FALSE)
+             stats.in.rows = TRUE, ci=TRUE, conf.level=0.95, 
+             p.value = FALSE,
+             digits = 1, 
+             combine.groups = FALSE)
 
+
+# Genero de 10 mil muestras de tamanio 5 y calculo el promedio, luego grafico
 mediaIngr = c()
 n = 5
 for(i in 1:10000){
@@ -512,16 +547,31 @@ print(round(c(mean(mediaIngr),mean(datos$IngTotalInd)),2))
 Xdata = rnorm(50000,mean(mediaIngr),sd(mediaIngr))
 Densidad = density(Xdata)
 
+# Lo grafico y vemos que no se distribuye normal: no deberia aplicar un intervalo de confianza 
 HistPlotly = plot_ly(
   x = mediaIngr,
-  type = "histogram", stroke = I("Black"), nbinsx = 20) %>% layout(yaxis=list(type='linear'))  %>% 
-  add_trace(x = Densidad$x, y = Densidad$y, type = "scatter", mode = "lines", 
-            fill = "tozeroy", yaxis = "y2", name = "Density") %>%
-  layout(xaxis = x, yaxis = y, yaxis2 = list(overlaying = "y", side = "right"),
+  type = "histogram", 
+  stroke = I("Black"), 
+  nbinsx = 20) %>% 
+  layout(yaxis=list(type='linear'))  %>% 
+  add_trace(x = Densidad$x, 
+            y = Densidad$y, 
+            type = "scatter", 
+            mode = "lines", 
+            fill = "tozeroy", 
+            yaxis = "y2", 
+            name = "Density") %>%
+  layout(xaxis = x, 
+         yaxis = y, yaxis2 = list(overlaying = "y", 
+                                  side = "right"),
          title = "Histograma y función de densidad Normal")
 HistPlotly
 
+# Si aumento el tamanio de la muestra, comienza a distribuirse de manera normal 
+
+
 ############## Esperanza matemática #############
+
 inicio = Sys.time()
 mediaIngr_n1 = c()
 mediaIngr_n2 = c()
@@ -598,24 +648,36 @@ HistPlotlyTCLn3
 
 
 ########### Estimador y el sesgo de estimación #############
+## Insesgado: si la media muestral es insesgada es xq el valor esperado es igual al parametro, es decir tomo todos los promedios y luego calculo un promedio y me da la muestra 
+## Consistente
+
 n = 5
 sigma = 3
 Sesgo_1 = c()
 Sesgo_2 = c()
 for(i in 1:30000){
   Xdatos = rnorm(n,10,sigma)
-  S_1 = (sum((Xdatos-mean(Xdatos))^2)/n)
-  S_2 = (sum((Xdatos-mean(Xdatos))^2)/(n-1))
-  Sesgo_1 = c(Sesgo_1, (S_1 - sigma^2))
-  Sesgo_2 = c(Sesgo_2, (S_2 - sigma^2))
+  S_1 = (sum((Xdatos-mean(Xdatos))^2)/n) # Calculo sigma cuadrado
+  S_2 = (sum((Xdatos-mean(Xdatos))^2)/(n-1)) # Calulo S cuadrado
+  Sesgo_1 = c(Sesgo_1, (S_1 - sigma^2)) # Sesgo
+  Sesgo_2 = c(Sesgo_2, (S_2 - sigma^2)) # Sesgo
 }
-print(c(round(mean(Sesgo_1)/(sigma^2)*100,3), round(mean(Sesgo_2)/(sigma^2)*100,3)))
+print(c(round(mean(Sesgo_1)/(sigma^2)*100,3), 
+        round(mean(Sesgo_2)/(sigma^2)*100,3)))
+
+# Estoy subestimando la varianza de los datos en un 4% 
 
 ########### consistencia de estimación #############
+## Similar a lo insesgado
+## Indica que pasa con la varianza cuando es cero, es decir no es aletaoria 
+## Creo una funcion que calcula un promedio de mis 3 observaciones 
+
 Estima = function(x,n=3){
   Est1 = mean(sample(x,n))
   return(Est1)
 }
+
+## Lo repito para varios tamanios de muestra y calculo el promedio y el estimador de arriba. Y veo que pasa cuando aumento el tamanio de la muestra. 
 
 ns = c(5, 10, 30, 100, 10000, 100000)
 sigma = 3
@@ -627,26 +689,44 @@ for(j in 1:length(ns)){
   n = ns[j]
   for(i in 1:M){
     Xdatos = rnorm(n,mu,sigma)
-    Est1[i,j] = mean(Xdatos)
-    Est2[i,j] = Estima(Xdatos)
+    Est1[i,j] = mean(Xdatos)  # Media 
+    Est2[i,j] = Estima(Xdatos) # Media que utiliza 3 observaciones 
   }
 }
+
 ECM1 = apply(Est1, 2, var) + apply((Est1-mu)^2,2,mean)
 ECM2 = apply(Est2, 2, var) + apply((Est2-mu)^2,2,mean)
 print(round(ECM1,4))
 print(round(ECM2,4))
 
+## La varianza del estimador se va achicando a medida que aumenta el tamanio de la muestra, y como el estimador es insesgado el punto es el parametro que estoy buscando. Mas observaciones aumentan mi precision en la estimacion del parametro.  
+
+## Al usar 3 observaciones la varianza es constante 
+
+
 ########### Estimación por Intervalos #############
+## Intervalo para la media de los ingresos laborales. El intervalo contiene al verdadero valor del parametro en el 95% de las veces. En el 5% de las veces el intervalo no contiene al verdadero valor.   
 
 datos = na.omit(Ind_2019_04_subset[Ind_2019_04_subset$IngTotalInd>=0 &Ind_2019_04_subset$IngTotalInd<50000, 
                                    c("IngTotalInd","Sexo","SitLaboral")])
 
-summaryStats(IngTotalInd ~ 1, data= na.omit(Ind_2019_04_subset[,c("IngTotalInd","Sexo" )]),
-             stats.in.rows = TRUE, digits = 1, ci = TRUE,  conf.level = 0.95, combine.groups = FALSE)
+summaryStats(IngTotalInd ~ 1, 
+             data = datos,
+             stats.in.rows = TRUE, 
+             digits = 1, 
+             ci = TRUE,  
+             conf.level = 0.95, 
+             combine.groups = FALSE)
 
-summaryStats(IngTotalInd ~ Sexo, data= na.omit(Ind_2019_04_subset[,c("IngTotalInd","Sexo" )]),
-             stats.in.rows = TRUE, digits = 1, ci = TRUE,  conf.level = 0.95, combine.groups = FALSE)
+summaryStats(IngTotalInd ~ Sexo, 
+             data= na.omit(Ind_2019_04_subset[,c("IngTotalInd","Sexo" )]),
+             stats.in.rows = TRUE, 
+             digits = 1, ci = TRUE,  
+             conf.level = 0.95, 
+             combine.groups = FALSE)
 
+
+## En promedio el 5% de las veces queda afuera  
 
 Inicio = Sys.time()
 mediaIngr = c()
@@ -678,21 +758,37 @@ Final - Inicio
 ########### Prueba de hipótesis #############
 
 ################## Prueba t #################
+## Ho
+## H1
+## Estadistico: distribucion que conocemos bajo el supuesto que Ho sea verdadera
+
 Conlevel = 0.95
-hopotesisIngre1 = t.test(na.omit(Ind_2019_04_subset$IngTotalInd), mu = 13000, conf.level = Conlevel)
-hopotesisIngre2 = t.test(na.omit(Ind_2019_04_subset$IngTotalInd), mu = 13000, conf.level = Conlevel, 
-                         alternative = "greater")
+hopotesisIngre1 = t.test(na.omit(datos$IngTotalInd), 
+                         mu = 13000, # Ingreso medio
+                         conf.level = Conlevel)
+
+hopotesisIngre2 = t.test(na.omit(datos$IngTotalInd), 
+                         mu = 13000, 
+                         conf.level = Conlevel, 
+                         alternative = "greater") # Mayor que 
 hopotesisIngre1
 hopotesisIngre2
 
+
+## El valor p calcula la probabilidad de observar algo mas alto que el valor observado (13000) 
 
 
 datos = na.omit(Ind_2019_04_subset[Ind_2019_04_subset$IngTotalInd>=0 &Ind_2019_04_subset$IngTotalInd<50000, 
                                    c("IngTotalInd","Sexo","SitLaboral")])
 
-f <- list(family = "Courier New, monospace", size = 18, color = I("green"))
-x <- list(title = "Frecuencia", titlefont = f)
-y <- list(title = "y Axis", titlefont = f)
+f <- list(family = "Courier New, monospace", 
+          size = 18, 
+          color = I("green"))
+x <- list(title = "Frecuencia", 
+          titlefont = f)
+y <- list(title = "y Axis", 
+          titlefont = f)
+
 
 muH0 = 1
 muH1 = 5
@@ -714,21 +810,41 @@ fig = fig %>% layout(xaxis = list(title = 'Valores de la variables analizada'),
                      yaxis = list(title = 'Densidad'), showlegend = TRUE, legend = list(x = 0.7, y = 1.1))
 fig
 
-datos = Ind_2019_04_subset[,c("IngTotalInd","EducaMax", "EducaMaxFin","RamaActi","Sexo" )]
+## Diferencia de medias
 
-hopotesisIngre3 = t.test(IngTotalInd ~ Sexo, mu = 0, data = na.omit(datos), conf.level = Conlevel)
+datos = Ind_2019_04_subset[,c("IngTotalInd","EducaMax", 
+                              "EducaMaxFin","RamaActi","Sexo" )]
+
+hopotesisIngre3 = t.test(IngTotalInd ~ Sexo, 
+                         mu = 0, 
+                         data = na.omit(datos), 
+                         conf.level = Conlevel)
+
+## Con un nivel de confianza del 95% rechazo que la Ho es igual a cero. 
+
 
 datos1 = (subset(Ind_2019_04_subset[,c("IngTotalInd","EducaMax", "EducaMaxFin","RamaActi","Sexo" )], 
                  RamaActi >=45000 & RamaActi <50000))
 hopotesisIngre4 = t.test(IngTotalInd ~ Sexo, mu = 0, data = na.omit(datos1), conf.level = Conlevel)
 
+## Diferencia de medias dentro de un mismo sector de act economica 
+
 datosH2 = (subset(Ind_2019_04_subset[,c("IngTotalInd","EducaMax", "EducaMaxFin","RamaActi","Sexo" )], 
-                  RamaActi >=55000 & RamaActi <56080 & Sexo == "Hombre"))
+                  RamaActi >=55000 & 
+                  RamaActi <56080 & 
+                  Sexo == "Hombre"))
 
 datosM2 = (subset(Ind_2019_04_subset[,c("IngTotalInd","EducaMax", "EducaMaxFin","RamaActi","Sexo" )], 
-                  RamaActi >=55000 & RamaActi <56000 & Sexo == "Mujer"))
+                  RamaActi >=55000 & 
+                  RamaActi <56000 & 
+                  Sexo == "Mujer"))
 
-hopotesisIngre5 = t.test(na.omit(datosH2$IngTotalInd),na.omit(datosM2$IngTotalInd), mu = 0, conf.level = Conlevel)
+hopotesisIngre5 = t.test(na.omit(datosH2$IngTotalInd),
+                         na.omit(datosM2$IngTotalInd), 
+                         mu = 0, conf.level = Conlevel)
+
+# No rechazo la Ho. No hay diferencia de ingresos entre hombres y mujeres de un mismo sector economico. 
+# Dentro de la rama de actividad, las diferentes tareas laborales 
 
 datosH3 = (subset(Ind_2019_04_subset[,c("IngTotalInd","EducaMax", "EducaMaxFin","RamaActi","Sexo" )], 
                   RamaActi >=58000 & RamaActi <64080 & Sexo == "Hombre"))
